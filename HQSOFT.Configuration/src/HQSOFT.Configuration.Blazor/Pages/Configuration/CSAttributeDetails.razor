@@ -1,0 +1,290 @@
+@page "/Configuration/CSAttributeDetails"
+
+
+
+@attribute [Authorize(ConfigurationPermissions.CSAttributeDetails.Default)]
+@using global::HQSOFT.Configuration.CSAttributeDetails
+@using global::HQSOFT.Configuration.Localization
+@using global::HQSOFT.Configuration.Shared
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.Extensions.Localization
+@using Microsoft.AspNetCore.Components.Web
+@using Blazorise
+@using Blazorise.Components
+@using Blazorise.DataGrid
+@using Volo.Abp.BlazoriseUI
+@using Volo.Abp.BlazoriseUI.Components
+@using Volo.Abp.ObjectMapping
+@using Volo.Abp.AspNetCore.Components.Messages
+@using Volo.Abp.AspNetCore.Components.Web.Theming.Layout
+@using global::HQSOFT.Configuration.Permissions
+@using Microsoft.AspNetCore.Components
+@using Volo.Abp.AspNetCore.Components.Web
+@using Volo.Abp.Http.Client
+@inherits ConfigurationComponentBase
+@inject ICSAttributeDetailsAppService CSAttributeDetailsAppService
+@inject IUiMessageService UiMessageService
+@inject IRemoteServiceConfigurationProvider RemoteServiceConfigurationProvider
+@inject NavigationManager NavigationManager
+
+@* ************************* PAGE HEADER ************************* *@
+<PageHeader Title="@L["CSAttributeDetails"]" BreadcrumbItems="BreadcrumbItems" Toolbar="Toolbar">
+
+</PageHeader>
+
+@* ************************* SEARCH ************************* *@
+<Card>
+    <CardBody>
+        <Form id="CSAttributeDetailSearchForm" class="mb-3">
+            <Addons>
+                <Addon AddonType="AddonType.Body">
+                    <TextEdit @bind-Text="@Filter.FilterText"
+                              Autofocus="true"
+                              Placeholder="@L["Search"]">
+                    </TextEdit>
+                </Addon>
+                <Addon AddonType="AddonType.End">
+                    <SubmitButton Form="CSAttributeDetailSearchForm" Clicked="GetCSAttributeDetailsAsync">
+                        <Icon Name="IconName.Search" Class="me-1"></Icon>@L["Search"]
+                    </SubmitButton>
+                </Addon>
+            </Addons>
+        </Form>
+    </CardBody>
+</Card>
+
+@* ************************* DATA GRID ************************* *@
+<Card>
+    <CardBody>
+        <DataGrid TItem="CSAttributeDetailWithNavigationPropertiesDto"
+                  Data="CSAttributeDetailList"
+                  ReadData="OnDataGridReadAsync"
+                  TotalItems="TotalCount"
+                  ShowPager="true"
+                  Responsive="true"
+                  PageSize="PageSize">
+            <DataGridColumns>
+                <DataGridEntityActionsColumn TItem="CSAttributeDetailWithNavigationPropertiesDto" @ref="@EntityActionsColumn">
+                    <DisplayTemplate>
+                        <EntityActions TItem="CSAttributeDetailWithNavigationPropertiesDto" EntityActionsColumn="@EntityActionsColumn">
+                            <EntityAction TItem="CSAttributeDetailWithNavigationPropertiesDto"
+                                          Visible="@CanEditCSAttributeDetail"
+                                          Clicked="async () => await OpenEditCSAttributeDetailModalAsync(context)"
+                                          Text="@L["Edit"]"></EntityAction>
+                            <EntityAction TItem="CSAttributeDetailWithNavigationPropertiesDto"
+                                          Visible="@CanDeleteCSAttributeDetail"
+                                          Clicked="() => DeleteCSAttributeDetailAsync(context)"
+                                          ConfirmationMessage="@(()=> L["DeleteConfirmationMessage"])"
+                                          Text="@L["Delete"]"></EntityAction>
+                        </EntityActions>
+                    </DisplayTemplate>
+                </DataGridEntityActionsColumn>
+               
+              <DataGridColumn TItem="CSAttributeDetailWithNavigationPropertiesDto"
+                      Field="CSAttributeDetail.ValueID"
+                      Caption="@L["ValueID"]">
+              </DataGridColumn>
+
+              <DataGridColumn TItem="CSAttributeDetailWithNavigationPropertiesDto"
+                      Field="CSAttributeDetail.Description"
+                      Caption="@L["Description"]">
+              </DataGridColumn>
+
+              <DataGridColumn TItem="CSAttributeDetailWithNavigationPropertiesDto"
+                      Field="CSAttributeDetail.SortOrder"
+                      Caption="@L["SortOrder"]">
+              </DataGridColumn>
+
+              <DataGridColumn TItem="CSAttributeDetailWithNavigationPropertiesDto"
+                      Field="CSAttributeDetail.Disabled"
+                      Caption="@L["Disabled"]">
+                    <DisplayTemplate>
+                        @if (context.CSAttributeDetail.Disabled)
+                        {
+                            <Icon TextColor="TextColor.Success" Name="@IconName.Check" />
+                        }
+                        else
+                        {
+                            <Icon TextColor="TextColor.Danger" Name="@IconName.Times" />
+                        }
+                    </DisplayTemplate>
+              </DataGridColumn>
+
+
+              <DataGridColumn TItem="CSAttributeDetailWithNavigationPropertiesDto"
+                      Field="CSAttribute.AttributeID"
+                      Caption="@L["CSAttribute"]">
+              </DataGridColumn>
+
+            </DataGridColumns>
+        </DataGrid>
+    </CardBody>
+</Card>
+
+@* ************************* CREATE MODAL ************************* *@
+<Modal @ref="CreateCSAttributeDetailModal" Closing="@CreateCSAttributeDetailModal.CancelClosingModalWhenFocusLost">
+    <ModalContent Centered="true">
+        <Form id="CreateCSAttributeDetailForm">
+            <ModalHeader>
+                <ModalTitle>@L["NewCSAttributeDetail"]</ModalTitle>
+                <CloseButton Clicked="CloseCreateCSAttributeDetailModalAsync" />
+            </ModalHeader>
+            <ModalBody>
+                <Validations @ref="@NewCSAttributeDetailValidations"
+                            Mode="ValidationMode.Auto"
+                            Model="@NewCSAttributeDetail"
+                            ValidateOnLoad="false">
+                     
+                    
+                    <Validation>
+                        <Field>
+                            <FieldLabel>@L["ValueID"] *</FieldLabel>
+                            <TextEdit @bind-Text="@NewCSAttributeDetail.ValueID" MaxLength="CSAttributeDetailConsts.ValueIDMaxLength" >
+                                <Feedback>
+                                    <ValidationError />
+                                </Feedback>
+                            </TextEdit>
+                        </Field>
+                    </Validation>
+
+
+                    <Validation>
+                        <Field>
+                            <FieldLabel>@L["Description"] *</FieldLabel>
+                            <TextEdit @bind-Text="@NewCSAttributeDetail.Description" MaxLength="CSAttributeDetailConsts.DescriptionMaxLength" >
+                                <Feedback>
+                                    <ValidationError />
+                                </Feedback>
+                            </TextEdit>
+                        </Field>
+                    </Validation>
+
+
+                    <Validation>
+                        <Field>
+                            <FieldLabel>@L["SortOrder"]</FieldLabel>
+                            <NumericPicker TValue="uint?" @bind-Value="@NewCSAttributeDetail.SortOrder"  Decimals="0" >
+                                <Feedback>
+                                    <ValidationError />
+                                </Feedback>
+                             </NumericPicker>
+                        </Field>
+                     </Validation>
+
+
+                    <Field>
+                        <Check TValue="bool" @bind-Checked="@NewCSAttributeDetail.Disabled" >@L["Disabled"]</Check>
+                    </Field>
+
+                    <Field>
+                        <FieldLabel>@L["CSAttribute"]</FieldLabel>
+                        <Select TValue="Guid?" @bind-SelectedValue="@NewCSAttributeDetail.CSAttributeId">
+                            <SelectItem TValue="Guid?" Value="null"></SelectItem>
+                            @foreach (var cSAttribute in CSAttributesCollection)
+                            {
+                                <SelectItem TValue="Guid?" Value="@cSAttribute.Id">
+                                    @cSAttribute.DisplayName
+                                </SelectItem>
+                            }
+                        </Select>
+                    </Field>
+
+
+                    
+                    
+                </Validations>
+            </ModalBody>
+            <ModalFooter>
+                <Button Color="Color.Secondary"
+                        Clicked="CloseCreateCSAttributeDetailModalAsync">
+                    @L["Cancel"]
+                </Button>
+                <SubmitButton Form="CreateCSAttributeDetailForm" Clicked="CreateCSAttributeDetailAsync" />
+            </ModalFooter>
+        </Form>
+    </ModalContent>
+</Modal>
+
+@* ************************* EDIT MODAL ************************* *@
+<Modal @ref="EditCSAttributeDetailModal" Closing="@EditCSAttributeDetailModal.CancelClosingModalWhenFocusLost">
+    <ModalContent Centered="true">
+        <Form id="EditCSAttributeDetailForm">
+            <ModalHeader>
+                <ModalTitle>@L["Update"]</ModalTitle>
+                <CloseButton Clicked="CloseEditCSAttributeDetailModalAsync" />
+            </ModalHeader>
+            <ModalBody>
+                <Validations @ref="@EditingCSAttributeDetailValidations"
+                            Mode="ValidationMode.Auto"
+                            Model="@EditingCSAttributeDetail"
+                            ValidateOnLoad="false">
+                     
+                    
+                    <Validation>
+                        <Field>
+                            <FieldLabel>@L["ValueID"] *</FieldLabel>
+                            <TextEdit @bind-Text="@EditingCSAttributeDetail.ValueID" MaxLength="CSAttributeDetailConsts.ValueIDMaxLength" >
+                                <Feedback>
+                                    <ValidationError />
+                                </Feedback>
+                            </TextEdit>
+                        </Field>
+                    </Validation>
+
+
+                    <Validation>
+                        <Field>
+                            <FieldLabel>@L["Description"] *</FieldLabel>
+                            <TextEdit @bind-Text="@EditingCSAttributeDetail.Description" MaxLength="CSAttributeDetailConsts.DescriptionMaxLength" >
+                                <Feedback>
+                                    <ValidationError />
+                                </Feedback>
+                            </TextEdit>
+                        </Field>
+                    </Validation>
+
+
+                    <Validation>
+                        <Field>
+                            <FieldLabel>@L["SortOrder"]</FieldLabel>
+                            <NumericPicker TValue="uint?" @bind-Value="@EditingCSAttributeDetail.SortOrder"  Decimals="0" >
+                                <Feedback>
+                                    <ValidationError />
+                                </Feedback>
+                             </NumericPicker>
+                        </Field>
+                     </Validation>
+
+
+                    <Field>
+                        <Check TValue="bool" @bind-Checked="@EditingCSAttributeDetail.Disabled" >@L["Disabled"]</Check>
+                    </Field>
+
+                    <Field>
+                        <FieldLabel>@L["CSAttribute"]</FieldLabel>
+                        <Select TValue="Guid?" @bind-SelectedValue="@EditingCSAttributeDetail.CSAttributeId">
+                            <SelectItem TValue="Guid?" Value="null"></SelectItem>
+                            @foreach (var cSAttribute in CSAttributesCollection)
+                            {
+                                <SelectItem TValue="Guid?" Value="@cSAttribute.Id">
+                                    @cSAttribute.DisplayName
+                                </SelectItem>
+                            }
+                        </Select>
+                    </Field>
+
+
+                    
+                    
+                </Validations>
+            </ModalBody>
+            <ModalFooter>
+                <Button Color="Color.Secondary"
+                        Clicked="CloseEditCSAttributeDetailModalAsync">
+                    @L["Cancel"]
+                </Button>
+                <SubmitButton Form="CreateCSAttributeDetailForm" Clicked="UpdateCSAttributeDetailAsync" />
+            </ModalFooter>
+        </Form>
+    </ModalContent>
+</Modal>

@@ -1,0 +1,165 @@
+@page "/Configuration/CSAttributes"
+
+@attribute [Authorize(ConfigurationPermissions.CSAttributes.Default)]
+@using global::HQSOFT.Configuration.CSAttributes
+@using global::HQSOFT.Configuration.Localization
+@using global::HQSOFT.Configuration.Shared
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.Extensions.Localization
+@using Microsoft.AspNetCore.Components.Web
+@using Blazorise
+@using Blazorise.Components
+@using Blazorise.DataGrid
+@using Volo.Abp.BlazoriseUI
+@using Volo.Abp.BlazoriseUI.Components
+@using Volo.Abp.ObjectMapping
+@using Volo.Abp.AspNetCore.Components.Messages
+@using Volo.Abp.AspNetCore.Components.Web.Theming.Layout
+@using global::HQSOFT.Configuration.Permissions
+@using Microsoft.AspNetCore.Components
+@using Volo.Abp.AspNetCore.Components.Web
+@using Volo.Abp.Http.Client
+@inherits ConfigurationComponentBase
+@inject ICSAttributesAppService CSAttributesAppService
+@inject IUiMessageService UiMessageService
+@inject IRemoteServiceConfigurationProvider RemoteServiceConfigurationProvider
+@inject NavigationManager NavigationManager
+
+
+@* ************************* PAGE HEADER ************************* *@
+<PageHeader Title="@L["Attributes"]" BreadcrumbItems="BreadcrumbItems" Toolbar="Toolbar">
+
+</PageHeader>
+
+@* ************************* SEARCH ************************* *@
+<Card>
+    <CardBody>
+        <Form id="CSAttributeSearchForm" class="mb-3">
+            <Addons>
+                <Addon AddonType="AddonType.Body">
+                    <TextEdit @bind-Text="@Filter.FilterText"
+                              Autofocus="true"
+                              Placeholder="@L["Search"]">
+                    </TextEdit>
+                </Addon>
+                <Addon AddonType="AddonType.End">
+                    <SubmitButton Form="CSAttributeSearchForm" Clicked="GetCSAttributesAsync">
+                        <Icon Name="IconName.Search" Class="me-1"></Icon>@L["Search"]
+                    </SubmitButton>
+                </Addon>
+            </Addons>
+        </Form>
+    </CardBody>
+</Card>
+
+@* ************************* DATA GRID ************************* *@
+<Card>
+    <CardBody>
+        <DataGrid TItem="CSAttributeDto"
+                  Data="CSAttributeList"
+                  ReadData="OnDataGridReadAsync"
+                  TotalItems="TotalCount"
+                  ShowPager="true"
+                  Responsive="true"
+                  PageSize="PageSize"
+                  @bind-SelectedRows="selectedAttributes"
+                  SelectionMode="Blazorise.DataGrid.DataGridSelectionMode.Multiple">
+
+            <DataGridMultiSelectColumn TItem="CSAttributeDto" Width="30px"></DataGridMultiSelectColumn>
+            <DataGridCommandColumn TItem="CSAttributeDto" />
+            <DataGridColumn TItem="CSAttributeDto"
+                            Field="AttributeID"
+                            Filterable="false"
+                            Sortable="false"
+                            Caption="#"
+                            Width="10px">
+                <DisplayTemplate>
+                    @{
+                        @(CSAttributeList.ToList().IndexOf(context) + 1)
+                    }
+                </DisplayTemplate>
+            </DataGridColumn>
+
+            <DataGridColumn TItem="CSAttributeDto"
+                            Field="AttributeID"
+                            Caption="@L["AttributeID"]">
+                <DisplayTemplate>
+                    @{
+                        <a class="d-block text-left" href="javascript:;" @onclick="() => GoToEditPage(context)">@((context as CSAttributeDto).AttributeID)</a>
+                    }
+                </DisplayTemplate>
+            </DataGridColumn>
+
+            <DataGridColumn TItem="CSAttributeDto"
+                            Field="Description"
+                            Caption="@L["Description"]">
+            </DataGridColumn>
+
+            <DataGridColumn TItem="CSAttributeDto"
+                            Field="ControlType"
+                            Caption="@L["ControlType"]">
+                <DisplayTemplate>
+                    @L[$"Enum:ControlType.{context.ControlType.ToString("d")}"]
+                </DisplayTemplate>
+            </DataGridColumn>
+
+
+            <DataGridColumn TItem="CSAttributeDto"
+                            Field="EntryMask"
+                            Caption="@L["EntryMask"]">
+            </DataGridColumn>
+
+            <DataGridColumn TItem="CSAttributeDto"
+                            Field="RegExp"
+                            Caption="@L["RegExp"]">
+            </DataGridColumn>
+
+            <DataGridColumn TItem="CSAttributeDto"
+                            Field="List"
+                            Caption="@L["List"]">
+            </DataGridColumn>
+
+            <DataGridColumn TItem="CSAttributeDto"
+                            Field="IsInternal"
+                            Caption="@L["IsInternal"]">
+                <DisplayTemplate>
+                    @if (context.IsInternal)
+                    {
+                        <Icon TextColor="TextColor.Success" Name="@IconName.Check" />
+                    }
+                    else
+                    {
+                        <Icon TextColor="TextColor.Danger" Name="@IconName.Times" />
+                    }
+                </DisplayTemplate>
+            </DataGridColumn>
+
+
+            <DataGridColumn TItem="CSAttributeDto"
+                            Field="ContainsPersonalData"
+                            Caption="@L["ContainsPersonalData"]">
+                <DisplayTemplate>
+                    @if (context.ContainsPersonalData)
+                    {
+                        <Icon TextColor="TextColor.Success" Name="@IconName.Check" />
+                    }
+                    else
+                    {
+                        <Icon TextColor="TextColor.Danger" Name="@IconName.Times" />
+                    }
+                </DisplayTemplate>
+            </DataGridColumn>
+
+
+            <DataGridColumn TItem="CSAttributeDto"
+                            Field="ObjectName"
+                            Caption="@L["ObjectName"]">
+            </DataGridColumn>
+
+            <DataGridColumn TItem="CSAttributeDto"
+                            Field="FieldName"
+                            Caption="@L["FieldName"]">
+            </DataGridColumn>
+        </DataGrid>
+    </CardBody>
+</Card>

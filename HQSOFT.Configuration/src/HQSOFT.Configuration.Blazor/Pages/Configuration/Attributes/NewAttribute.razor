@@ -1,0 +1,147 @@
+﻿@page "/Configuration/CSAttributes/edit/{Id}"
+@using HQSOFT.Configuration.CSAttributeDetails;
+@using HQSOFT.Configuration.CSAttributes;
+@using Volo.Abp.AspNetCore.Components.Messages;
+@using Volo.Abp.AspNetCore.Components.Web.Theming.Layout
+@using Volo.Abp.Http.Client;
+
+@inherits ConfigurationComponentBase
+@inject ICSAttributesAppService CSAttributesAppService
+@inject ICSAttributeDetailsAppService AttributeDetailsAppService
+@inject IUiMessageService UiMessageService
+@inject IRemoteServiceConfigurationProvider RemoteServiceConfigurationProvider
+@inject NavigationManager NavigationManager
+@* ************************* PAGE HEADER ************************* *@
+<PageHeader Title="@EditingAttribute.AttributeID" BreadcrumbItems="BreadcrumbItems" Toolbar="Toolbar">
+    <p></p>
+</PageHeader>
+
+@* ************************* EDIT ************************* *@
+
+<Card>
+    <CardBody>
+        <Validations @ref="@EditingAttributeValidations"
+                     Mode="ValidationMode.Auto"
+                     Model="@EditingAttribute"
+                     ValidateOnLoad="false">
+            <Row>
+                <Column ColumnSize="ColumnSize.Is6">
+                    <Validation>
+                        <Field>
+                            <FieldLabel>@L["AttributeID"] *</FieldLabel>
+                            <TextEdit @bind-Text="@EditingAttribute.AttributeID" MaxLength="CSAttributeConsts.AttributeIDMaxLength" Casing="CharacterCasing.Upper">
+                                <Feedback>
+                                    <ValidationError />
+                                </Feedback>
+                            </TextEdit>
+                        </Field>
+                    </Validation>
+                </Column>
+                <Column ColumnSize="ColumnSize.Is6">
+                    <Validation>
+                        <Field>
+                            <FieldLabel>@L["Description"]</FieldLabel>
+                            <TextEdit @bind-Text="@EditingAttribute.Description" MaxLength="CSAttributeConsts.DescriptionMaxLength">
+                                <Feedback>
+                                    <ValidationError />
+                                </Feedback>
+                            </TextEdit>
+                        </Field>
+                    </Validation>
+                </Column>
+            </Row>
+            <Row>
+                <Column ColumnSize="ColumnSize.Is6">
+                    <Field>
+                        <FieldLabel>@L["ControlType"]</FieldLabel>
+                        <Select TValue="ControlType"
+                                SelectedValue="@EditingAttribute.ControlType"
+                                SelectedValueChanged="@OnSelectedValueChanged">
+                            @foreach (var itemValue in Enum.GetValues(typeof(ControlType)))
+                            {
+                                <SelectItem TValue="ControlType" Value="@((ControlType) itemValue)">
+                                    @L[$"Enum:ControlType.{((ControlType) itemValue).ToString("d")}"]
+                                </SelectItem>
+                            }
+                        </Select>
+                    </Field>
+                    <Field>
+                        <Check TValue="bool" @bind-Checked="@EditingAttribute.IsInternal">@L["IsInternal"]</Check>
+                    </Field>
+                </Column>
+                <Column ColumnSize="ColumnSize.Is6">
+
+                </Column>
+            </Row>
+
+            <Row>
+                <Column ColumnSize="ColumnSize.Is6">
+                    <Field>
+                        <FieldLabel>@L["EntryMask"]</FieldLabel>
+                        <TextEdit @bind-Text="@EditingAttribute.EntryMask" Disabled="@isDisabled" MaxLength="CSAttributeConsts.DescriptionMaxLength">
+                            <Feedback>
+                                <ValidationError />
+                            </Feedback>
+                        </TextEdit>
+                    </Field>
+                </Column>
+                <Column ColumnSize="ColumnSize.Is6">
+                    <Field Visibility="@isVisible">
+                        <FieldLabel>@L["SchemaObject"]</FieldLabel>
+                        <TextEdit @bind-Text="@EditingAttribute.ObjectName" MaxLength="CSAttributeConsts.DescriptionMaxLength">
+                            <Feedback>
+                                <ValidationError />
+                            </Feedback>
+                        </TextEdit>
+                    </Field>
+                </Column>
+            </Row>
+
+            <Row>
+                <Column ColumnSize="ColumnSize.Is6">
+                    <Field>
+                        <FieldLabel>@L["RegExp"]</FieldLabel>
+                        <TextEdit @bind-Text="@EditingAttribute.RegExp" Disabled="@isDisabled" MaxLength="CSAttributeConsts.DescriptionMaxLength">
+                            <Feedback>
+                                <ValidationError />
+                            </Feedback>
+                        </TextEdit>
+                    </Field>
+
+                </Column>
+                <Column ColumnSize="ColumnSize.Is6">
+                    <Field Visibility="@isVisible">
+                        <FieldLabel>@L["SchemaField"]</FieldLabel>
+                        <TextEdit @bind-Text="@EditingAttribute.FieldName" MaxLength="CSAttributeConsts.DescriptionMaxLength">
+                            <Feedback>
+                                <ValidationError />
+                            </Feedback>
+                        </TextEdit>
+                    </Field>
+                </Column>
+            </Row>
+        </Validations>
+    </CardBody>
+    <DxFormLayout>
+        <DxFormLayoutItem BeginRow="true" ColSpanMd="12">
+            <DxGrid Data="DataSource"
+                    PageSize="12"
+                    KeyFieldName="ValueID"
+                    ValidationEnabled="false"              
+                    CustomizeEditModel="Grid_CustomizeEditModel"
+                    EditModelSaving="Grid_EditModelSaving"
+                    DataItemDeleting="Grid_DataItemDeleting"                                     
+                    EditMode="GridEditMode.EditRow"
+                    EditorRenderMode="GridEditorRenderMode.Integrated">
+                <Columns >
+                    <DxGridCommandColumn Visible="@isVisibleEditMode" Width="160px" />
+                    <DxGridDataColumn FieldName="ValueID" MinWidth="100"  />
+                    <DxGridDataColumn FieldName="Description" Width="15%" />
+                    <DxGridDataColumn FieldName="SortOrder" Width="15%" />
+                    <DxGridDataColumn FieldName="Disabled" Width="10%" />
+                   
+                </Columns>
+            </DxGrid>
+        </DxFormLayoutItem>
+    </DxFormLayout>
+</Card>

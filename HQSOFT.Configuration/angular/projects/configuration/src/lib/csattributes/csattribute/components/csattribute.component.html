@@ -1,0 +1,515 @@
+<abp-page [title]="'Configuration::CSAttributes' | abpLocalization">
+  <abp-page-toolbar-container class="col">
+    <div class="text-lg-end pt-2">
+      <button
+        class="btn btn-primary btn-sm mx-2"
+        type="button"
+        [disabled]="isExportToExcelBusy"
+        (click)="exportToExcel()"
+      >
+        {{ 'Configuration::ExportToExcel' | abpLocalization }}
+      </button>
+
+      <button
+        *abpPermission="'Configuration.CSAttributes.Create'"
+        class="btn btn-primary btn-sm"
+        type="button"
+        (click)="create()"
+      >
+        <i class="fa fa-plus me-1" aria-hidden="true"></i>
+        {{ 'Configuration::NewCSAttribute' | abpLocalization }}
+      </button>
+    </div>
+  </abp-page-toolbar-container>
+
+  <abp-advanced-entity-filters localizationSourceName="Configuration" [list]="list">
+    <abp-advanced-entity-filters-form>
+      <form #filterForm (keyup.enter)="list.get()">
+        <div class="row">
+          <div class="col-12 col-sm-auto">
+            <div class="mb-3">
+              <label class="form-label" for="attributeIDFilter">
+                {{ 'Configuration::AttributeID' | abpLocalization }}
+              </label>
+
+              <input
+                id="attributeIDFilter"
+                class="form-control"
+                [(ngModel)]="filters.attributeID"
+                [ngModelOptions]="{ standalone: true }"
+              />
+            </div>
+          </div>
+          <div class="col-12 col-sm-auto">
+            <div class="mb-3">
+              <label class="form-label" for="descriptionFilter">
+                {{ 'Configuration::Description' | abpLocalization }}
+              </label>
+
+              <input
+                id="descriptionFilter"
+                class="form-control"
+                [(ngModel)]="filters.description"
+                [ngModelOptions]="{ standalone: true }"
+              />
+            </div>
+          </div>
+          <div class="col-12 col-sm-auto">
+            <div class="mb-3">
+              <label class="form-label" for="controlTypeFilter">
+                {{ 'Configuration::ControlType' | abpLocalization }}
+              </label>
+
+              <select
+                id="controlTypeFilter"
+                class="form-select form-control"
+                [(ngModel)]="filters.controlType"
+                [ngModelOptions]="{ standalone: true }"
+              >
+                <option [ngValue]="null"></option>
+                <option
+                  *ngFor="let option of controlTypeOptions; trackBy: track.by('value')"
+                  [ngValue]="option.value"
+                >
+                  {{ 'Configuration::Enum:ControlType.' + option.value | abpLocalization }}
+                </option>
+              </select>
+            </div>
+          </div>
+          <div class="col-12 col-sm-auto">
+            <div class="mb-3">
+              <label class="form-label" for="entryMaskFilter">
+                {{ 'Configuration::EntryMask' | abpLocalization }}
+              </label>
+
+              <input
+                id="entryMaskFilter"
+                class="form-control"
+                [(ngModel)]="filters.entryMask"
+                [ngModelOptions]="{ standalone: true }"
+              />
+            </div>
+          </div>
+          <div class="col-12 col-sm-auto">
+            <div class="mb-3">
+              <label class="form-label" for="regExpFilter">
+                {{ 'Configuration::RegExp' | abpLocalization }}
+              </label>
+
+              <input
+                id="regExpFilter"
+                class="form-control"
+                [(ngModel)]="filters.regExp"
+                [ngModelOptions]="{ standalone: true }"
+              />
+            </div>
+          </div>
+          <div class="col-12 col-sm-auto">
+            <div class="mb-3">
+              <label class="form-label" for="listFilter">
+                {{ 'Configuration::List' | abpLocalization }}
+              </label>
+
+              <input
+                id="listFilter"
+                class="form-control"
+                [(ngModel)]="filters.list"
+                [ngModelOptions]="{ standalone: true }"
+              />
+            </div>
+          </div>
+          <div class="col-12 col-sm-auto">
+            <div class="mb-3">
+              <label class="form-label" for="isInternalFilter">
+                {{ 'Configuration::IsInternal' | abpLocalization }}
+              </label>
+
+              <select
+                name="isInternal"
+                id="isInternalFilter"
+                class="form-select form-control"
+                [(ngModel)]="filters.isInternal"
+                [ngModelOptions]="{ standalone: true }"
+                (change)="list.get()"
+              >
+                <option [ngValue]=""></option>
+                <option [ngValue]="true">{{ 'AbpUi::Yes' | abpLocalization }}</option>
+                <option [ngValue]="false">{{ 'AbpUi::No' | abpLocalization }}</option>
+              </select>
+            </div>
+          </div>
+          <div class="col-12 col-sm-auto">
+            <div class="mb-3">
+              <label class="form-label" for="containsPersonalDataFilter">
+                {{ 'Configuration::ContainsPersonalData' | abpLocalization }}
+              </label>
+
+              <select
+                name="containsPersonalData"
+                id="containsPersonalDataFilter"
+                class="form-select form-control"
+                [(ngModel)]="filters.containsPersonalData"
+                [ngModelOptions]="{ standalone: true }"
+                (change)="list.get()"
+              >
+                <option [ngValue]=""></option>
+                <option [ngValue]="true">{{ 'AbpUi::Yes' | abpLocalization }}</option>
+                <option [ngValue]="false">{{ 'AbpUi::No' | abpLocalization }}</option>
+              </select>
+            </div>
+          </div>
+          <div class="col-12 col-sm-auto">
+            <div class="mb-3">
+              <label class="form-label" for="objectNameFilter">
+                {{ 'Configuration::ObjectName' | abpLocalization }}
+              </label>
+
+              <input
+                id="objectNameFilter"
+                class="form-control"
+                [(ngModel)]="filters.objectName"
+                [ngModelOptions]="{ standalone: true }"
+              />
+            </div>
+          </div>
+          <div class="col-12 col-sm-auto">
+            <div class="mb-3">
+              <label class="form-label" for="fieldNameFilter">
+                {{ 'Configuration::FieldName' | abpLocalization }}
+              </label>
+
+              <input
+                id="fieldNameFilter"
+                class="form-control"
+                [(ngModel)]="filters.fieldName"
+                [ngModelOptions]="{ standalone: true }"
+              />
+            </div>
+          </div>
+
+          <div class="col-12 col-sm-auto align-self-end mb-3">
+            <div class="row">
+              <div class="col-6 col-sm-auto d-grid">
+                <button type="button" class="btn btn-outline-primary" (click)="clearFilters()">
+                  <span>{{ 'AbpUi::Clear' | abpLocalization }}</span>
+                </button>
+              </div>
+              <div class="col-6 col-sm-auto d-grid">
+                <button type="button" class="btn btn-primary" (click)="list.get()">
+                  <span>{{ 'AbpUi::Refresh' | abpLocalization }}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+    </abp-advanced-entity-filters-form>
+  </abp-advanced-entity-filters>
+
+  <div class="card">
+    <div class="card-body">
+      <ngx-datatable [rows]="data.items" [count]="data.totalCount" [list]="list" default>
+        <ngx-datatable-column
+          [name]="'AbpUi::Actions' | abpLocalization"
+          [maxWidth]="150"
+          [width]="150"
+          [sortable]="false"
+        >
+          <ng-template let-row="row" let-i="rowIndex" ngx-datatable-cell-template>
+            <div ngbDropdown container="body" class="d-inline-block">
+              <button
+                class="btn btn-primary btn-sm dropdown-toggle"
+                data-toggle="dropdown"
+                aria-haspopup="true"
+                ngbDropdownToggle
+              >
+                <i class="fa fa-cog me-1" aria-hidden="true"></i>
+                {{ 'AbpUi::Actions' | abpLocalization }}
+              </button>
+
+              <div ngbDropdownMenu>
+                <button
+                  ngbDropdownItem
+                  *abpPermission="'Configuration.CSAttributes.Edit'"
+                  (click)="update(row)"
+                >
+                  {{ 'AbpUi::Edit' | abpLocalization }}
+                </button>
+
+                <button
+                  ngbDropdownItem
+                  *abpPermission="'Configuration.CSAttributes.Delete'"
+                  (click)="delete(row)"
+                >
+                  {{ 'AbpUi::Delete' | abpLocalization }}
+                </button>
+              </div>
+            </div>
+          </ng-template>
+        </ngx-datatable-column>
+        <ngx-datatable-column
+          name="{{ 'Configuration::AttributeID' | abpLocalization }}"
+          prop="attributeID"
+        >
+          <ng-template let-row="row" ngx-datatable-cell-template>
+            {{ row.attributeID }}
+          </ng-template>
+        </ngx-datatable-column>
+        <ngx-datatable-column
+          name="{{ 'Configuration::Description' | abpLocalization }}"
+          prop="description"
+        >
+          <ng-template let-row="row" ngx-datatable-cell-template>
+            {{ row.description }}
+          </ng-template>
+        </ngx-datatable-column>
+        <ngx-datatable-column
+          name="{{ 'Configuration::ControlType' | abpLocalization }}"
+          prop="controlType"
+        >
+          <ng-template let-row="row" ngx-datatable-cell-template>
+            {{
+              row.controlType !== null
+                ? ('Configuration::Enum:ControlType.' + row.controlType | abpLocalization)
+                : ''
+            }}
+          </ng-template>
+        </ngx-datatable-column>
+        <ngx-datatable-column
+          name="{{ 'Configuration::EntryMask' | abpLocalization }}"
+          prop="entryMask"
+        >
+          <ng-template let-row="row" ngx-datatable-cell-template>
+            {{ row.entryMask }}
+          </ng-template>
+        </ngx-datatable-column>
+        <ngx-datatable-column name="{{ 'Configuration::RegExp' | abpLocalization }}" prop="regExp">
+          <ng-template let-row="row" ngx-datatable-cell-template>
+            {{ row.regExp }}
+          </ng-template>
+        </ngx-datatable-column>
+        <ngx-datatable-column name="{{ 'Configuration::List' | abpLocalization }}" prop="list">
+          <ng-template let-row="row" ngx-datatable-cell-template>
+            {{ row.list }}
+          </ng-template>
+        </ngx-datatable-column>
+        <ngx-datatable-column
+          name="{{ 'Configuration::IsInternal' | abpLocalization }}"
+          prop="isInternal"
+        >
+          <ng-template let-row="row" ngx-datatable-cell-template>
+            <ng-template [ngIf]="row.isInternal" [ngIfThen]="yes" [ngIfElse]="no"></ng-template>
+
+            <ng-template #yes>
+              <div class="text-success">
+                <span [title]="'AbpUi::Yes' | abpLocalization">
+                  <i class="fa fa-check" aria-hidden="true"></i>
+                </span>
+              </div>
+            </ng-template>
+
+            <ng-template #no>
+              <div class="text-danger">
+                <span [title]="'AbpUi::No' | abpLocalization">
+                  <i class="fa fa-times" aria-hidden="true"></i>
+                </span>
+              </div>
+            </ng-template>
+          </ng-template>
+        </ngx-datatable-column>
+        <ngx-datatable-column
+          name="{{ 'Configuration::ContainsPersonalData' | abpLocalization }}"
+          prop="containsPersonalData"
+        >
+          <ng-template let-row="row" ngx-datatable-cell-template>
+            <ng-template
+              [ngIf]="row.containsPersonalData"
+              [ngIfThen]="yes"
+              [ngIfElse]="no"
+            ></ng-template>
+
+            <ng-template #yes>
+              <div class="text-success">
+                <span [title]="'AbpUi::Yes' | abpLocalization">
+                  <i class="fa fa-check" aria-hidden="true"></i>
+                </span>
+              </div>
+            </ng-template>
+
+            <ng-template #no>
+              <div class="text-danger">
+                <span [title]="'AbpUi::No' | abpLocalization">
+                  <i class="fa fa-times" aria-hidden="true"></i>
+                </span>
+              </div>
+            </ng-template>
+          </ng-template>
+        </ngx-datatable-column>
+        <ngx-datatable-column
+          name="{{ 'Configuration::ObjectName' | abpLocalization }}"
+          prop="objectName"
+        >
+          <ng-template let-row="row" ngx-datatable-cell-template>
+            {{ row.objectName }}
+          </ng-template>
+        </ngx-datatable-column>
+        <ngx-datatable-column
+          name="{{ 'Configuration::FieldName' | abpLocalization }}"
+          prop="fieldName"
+        >
+          <ng-template let-row="row" ngx-datatable-cell-template>
+            {{ row.fieldName }}
+          </ng-template>
+        </ngx-datatable-column>
+      </ngx-datatable>
+    </div>
+  </div>
+</abp-page>
+
+<abp-modal [busy]="isModalBusy" [(visible)]="isModalOpen">
+  <ng-template #abpHeader>
+    <h3>
+      {{ (selected ? 'AbpUi::Edit' : 'Configuration::NewCSAttribute') | abpLocalization }}
+    </h3>
+  </ng-template>
+
+  <ng-template #abpBody>
+    <form [formGroup]="form" id="csattribute" (ngSubmit)="submitForm()" validateOnSubmit>
+      <div class="mt-2 fade-in-top">
+        <div class="mb-3">
+          <label class="form-label" for="csattribute-attribute-id">
+            {{ 'Configuration::AttributeID' | abpLocalization }} *
+          </label>
+
+          <input
+            id="csattribute-attribute-id"
+            formControlName="attributeID"
+            class="form-control"
+            maxlength="10"
+            autofocus
+          />
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="csattribute-description">
+            {{ 'Configuration::Description' | abpLocalization }} *
+          </label>
+
+          <input
+            id="csattribute-description"
+            formControlName="description"
+            class="form-control"
+            maxlength="60"
+          />
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="csattribute-control-type">
+            {{ 'Configuration::ControlType' | abpLocalization }}
+          </label>
+
+          <select
+            id="csattribute-control-type"
+            formControlName="controlType"
+            class="form-select form-control"
+          >
+            <option [ngValue]="null"></option>
+            <option
+              *ngFor="let option of controlTypeOptions; trackBy: track.by('key')"
+              [ngValue]="option.value"
+            >
+              {{ 'Configuration::Enum:ControlType.' + option.value | abpLocalization }}
+            </option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="csattribute-entry-mask">
+            {{ 'Configuration::EntryMask' | abpLocalization }}
+          </label>
+
+          <input
+            id="csattribute-entry-mask"
+            formControlName="entryMask"
+            class="form-control"
+            maxlength="60"
+          />
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="csattribute-reg-exp">
+            {{ 'Configuration::RegExp' | abpLocalization }}
+          </label>
+
+          <input
+            id="csattribute-reg-exp"
+            formControlName="regExp"
+            class="form-control"
+            maxlength="255"
+          />
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="csattribute-list">
+            {{ 'Configuration::List' | abpLocalization }}
+          </label>
+
+          <input id="csattribute-list" formControlName="list" class="form-control" />
+        </div>
+        <div class="form-check mb-3">
+          <input
+            type="checkbox"
+            id="csattribute-is-internal"
+            formControlName="isInternal"
+            class="form-check-input"
+          />
+
+          <label for="csattribute-is-internal" class="form-check-label">
+            {{ 'Configuration::IsInternal' | abpLocalization }}
+          </label>
+        </div>
+        <div class="form-check mb-3">
+          <input
+            type="checkbox"
+            id="csattribute-contains-personal-data"
+            formControlName="containsPersonalData"
+            class="form-check-input"
+          />
+
+          <label for="csattribute-contains-personal-data" class="form-check-label">
+            {{ 'Configuration::ContainsPersonalData' | abpLocalization }}
+          </label>
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="csattribute-object-name">
+            {{ 'Configuration::ObjectName' | abpLocalization }}
+          </label>
+
+          <input
+            id="csattribute-object-name"
+            formControlName="objectName"
+            class="form-control"
+            maxlength="512"
+          />
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="csattribute-field-name">
+            {{ 'Configuration::FieldName' | abpLocalization }}
+          </label>
+
+          <input
+            id="csattribute-field-name"
+            formControlName="fieldName"
+            class="form-control"
+            maxlength="512"
+          />
+        </div>
+      </div>
+    </form>
+  </ng-template>
+
+  <ng-template #abpFooter>
+    <button type="button" class="btn btn-secondary" abpClose>
+      {{ 'AbpUi::Cancel' | abpLocalization }}
+    </button>
+
+    <abp-button iconClass="fa fa-check" buttonType="submit" formName="csattribute">
+      {{ 'AbpUi::Save' | abpLocalization }}
+    </abp-button>
+  </ng-template>
+</abp-modal>

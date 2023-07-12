@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+    <Import Project="..\..\common.props" />
+    
+    <PropertyGroup>
+        <TargetFramework>net7.0</TargetFramework>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Volo.Abp.AspNetCore.Components.WebAssembly.Theming" Version="7.2.3" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\HQSOFT.Configuration.Blazor\HQSOFT.Configuration.Blazor.csproj" />
+        <ProjectReference Include="..\HQSOFT.Configuration.HttpApi.Client\HQSOFT.Configuration.HttpApi.Client.csproj" />
+    </ItemGroup>
+
+</Project>

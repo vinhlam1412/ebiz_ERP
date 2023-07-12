@@ -1,0 +1,40 @@
+@page
+@using Microsoft.AspNetCore.Mvc.Localization
+@using HQSOFT.Configuration.Localization
+@using HQSOFT.Configuration.Web.Pages.Configuration.CSAttributeDetails
+@using Volo.Abp.AspNetCore.Mvc.UI.Bootstrap.TagHelpers.Modal
+@using HQSOFT.Configuration.CSAttributeDetails;
+@using System.Globalization
+@inject IHtmlLocalizer<ConfigurationResource> L
+@model EditModalModel
+@{
+    Layout = null;
+}
+
+<form data-ajaxForm="true" asp-page="/Configuration/CSAttributeDetails/EditModal" autocomplete="off">
+    <abp-modal id="CSAttributeDetailEditModal">
+        <abp-modal-header title="@L["Update"].Value"></abp-modal-header>
+
+        <abp-modal-body>
+                    <abp-input asp-for="Id" />
+                    <abp-input asp-for="CSAttributeDetail.ConcurrencyStamp" hidden="true" suppress-label="true"/>
+                    
+
+            <abp-input asp-for="CSAttributeDetail.ValueID"   />
+
+
+            <abp-input asp-for="CSAttributeDetail.Description"   />
+
+
+            <abp-input asp-for="CSAttributeDetail.SortOrder"   />
+
+
+            <abp-input asp-for="CSAttributeDetail.Disabled"   />
+
+                                <abp-select asp-for="CSAttributeDetail.CSAttributeId" asp-items="Model.CSAttributeLookupList" label="@L["CSAttribute"].Value"/>
+                
+        </abp-modal-body>
+
+        <abp-modal-footer buttons="@(AbpModalButtons.Cancel|AbpModalButtons.Save)"></abp-modal-footer>
+    </abp-modal>
+</form>

@@ -1,0 +1,99 @@
+@page
+@using Microsoft.AspNetCore.Authorization
+@using Volo.Abp.AspNetCore.Mvc.UI.Layout
+@using HQSOFT.Configuration.Permissions
+@using HQSOFT.Configuration.Web.Pages.Configuration.CSAttributes
+@using HQSOFT.Configuration.Web.Menus
+@using Microsoft.AspNetCore.Mvc.Localization
+@using HQSOFT.Configuration.Localization
+@inject IHtmlLocalizer<ConfigurationResource> L
+@inject IAuthorizationService Authorization
+@model IndexModel
+@inject IPageLayout PageLayout
+@{
+    PageLayout.Content.Title = L["CSAttributes"].Value;
+    PageLayout.Content.MenuItemName = ConfigurationMenus.CSAttributes;
+}
+
+@section scripts
+{
+    <abp-script src="/Pages/Configuration/CSAttributes/index.js" />
+}
+
+@section content_toolbar {
+    <abp-button id="ExportToExcelButton" text="@L["ExportToExcel"].Value" icon="download" size="Small" button-type="Primary" />
+    @if (await Authorization.IsGrantedAsync(ConfigurationPermissions.CSAttributes.Create))
+    {
+        <abp-button id="NewCSAttributeButton" text="@L["NewCSAttribute"].Value" icon="plus" size="Small" button-type="Primary" />
+    }
+}
+
+<abp-card>
+    <abp-card-body>
+		<abp-row class="mb-3">
+            <abp-column size-md="_12">
+                <form id="SearchForm" autocomplete="off">
+                    <div class="input-group">
+                        <input class="form-control page-search-filter-text" id="FilterText" placeholder="@L["Search"]"/>
+                        <abp-button button-type="Primary" type="submit" icon="search"/>
+                    </div>
+                </form>
+            </abp-column>
+            <abp-column size-md="_12" class="mt-3">
+                <a href="javascript:;" id="AdvancedFilterSectionToggler" class="text-decoration-none">@L["SeeAdvancedFilters"]</a>
+            </abp-column>
+        </abp-row>
+
+        <abp-row id="AdvancedFilterSection" style="display: none;">
+            <abp-column size="_3">
+                <abp-input asp-for="AttributeIDFilter" label="@L["AttributeID"].Value" />
+            </abp-column>
+            <abp-column size="_3">
+                <abp-input asp-for="DescriptionFilter" label="@L["Description"].Value" />
+            </abp-column>
+            <abp-column size="_3">
+                <abp-select asp-for="ControlTypeFilter" label="@L["ControlType"].Value" />
+            </abp-column>
+            <abp-column size="_3">
+                <abp-input asp-for="EntryMaskFilter" label="@L["EntryMask"].Value" />
+            </abp-column>
+            <abp-column size="_3">
+                <abp-input asp-for="RegExpFilter" label="@L["RegExp"].Value" />
+            </abp-column>
+            <abp-column size="_3">
+                <abp-input asp-for="ListFilter" label="@L["List"].Value" />
+            </abp-column>
+            <abp-column size="_3">
+                <abp-select asp-for="IsInternalFilter" label="@L["IsInternal"].Value" />
+            </abp-column>
+            <abp-column size="_3">
+                <abp-select asp-for="ContainsPersonalDataFilter" label="@L["ContainsPersonalData"].Value" />
+            </abp-column>
+            <abp-column size="_3">
+                <abp-input asp-for="ObjectNameFilter" label="@L["ObjectName"].Value" />
+            </abp-column>
+            <abp-column size="_3">
+                <abp-input asp-for="FieldNameFilter" label="@L["FieldName"].Value" />
+            </abp-column>
+        </abp-row>
+
+        <abp-table striped-rows="true" id="CSAttributesTable">
+            <thead>
+				<tr>
+					<th>@L["Actions"]</th>
+					<th>@L["AttributeID"]</th>
+					<th>@L["Description"]</th>
+					<th>@L["ControlType"]</th>
+					<th>@L["EntryMask"]</th>
+					<th>@L["RegExp"]</th>
+					<th>@L["List"]</th>
+					<th>@L["IsInternal"]</th>
+					<th>@L["ContainsPersonalData"]</th>
+					<th>@L["ObjectName"]</th>
+					<th>@L["FieldName"]</th>
+
+				</tr>
+            </thead>
+        </abp-table>
+    </abp-card-body>
+</abp-card>

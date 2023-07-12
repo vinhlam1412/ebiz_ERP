@@ -1,0 +1,331 @@
+<abp-page [title]="'Configuration::CSAttributeDetails' | abpLocalization">
+  <abp-page-toolbar-container class="col">
+    <div class="text-lg-end pt-2">
+      <button
+        class="btn btn-primary btn-sm mx-2"
+        type="button"
+        [disabled]="isExportToExcelBusy"
+        (click)="exportToExcel()"
+      >
+        {{ 'Configuration::ExportToExcel' | abpLocalization }}
+      </button>
+
+      <button
+        *abpPermission="'Configuration.CSAttributeDetails.Create'"
+        class="btn btn-primary btn-sm"
+        type="button"
+        (click)="create()"
+      >
+        <i class="fa fa-plus me-1" aria-hidden="true"></i>
+        {{ 'Configuration::NewCSAttributeDetail' | abpLocalization }}
+      </button>
+    </div>
+  </abp-page-toolbar-container>
+
+  <abp-advanced-entity-filters localizationSourceName="Configuration" [list]="list">
+    <abp-advanced-entity-filters-form>
+      <form #filterForm (keyup.enter)="list.get()">
+        <div class="row">
+          <div class="col-12 col-sm-auto">
+            <div class="mb-3">
+              <label class="form-label" for="valueIDFilter">
+                {{ 'Configuration::ValueID' | abpLocalization }}
+              </label>
+
+              <input
+                id="valueIDFilter"
+                class="form-control"
+                [(ngModel)]="filters.valueID"
+                [ngModelOptions]="{ standalone: true }"
+              />
+            </div>
+          </div>
+          <div class="col-12 col-sm-auto">
+            <div class="mb-3">
+              <label class="form-label" for="descriptionFilter">
+                {{ 'Configuration::Description' | abpLocalization }}
+              </label>
+
+              <input
+                id="descriptionFilter"
+                class="form-control"
+                [(ngModel)]="filters.description"
+                [ngModelOptions]="{ standalone: true }"
+              />
+            </div>
+          </div>
+          <div class="col-12 col-sm-auto">
+            <div class="mb-3">
+              <label class="form-label" for="minSortOrder">
+                {{ 'Configuration::MinSortOrder' | abpLocalization }}
+              </label>
+
+              <input
+                id="minSortOrder"
+                type="number"
+                class="form-control"
+                [(ngModel)]="filters.sortOrderMin"
+                [ngModelOptions]="{ standalone: true }"
+              />
+            </div>
+          </div>
+
+          <div class="col-12 col-sm-auto">
+            <div class="mb-3">
+              <label class="form-label" for="maxSortOrder">
+                {{ 'Configuration::MaxSortOrder' | abpLocalization }}
+              </label>
+
+              <input
+                id="maxSortOrder"
+                type="number"
+                class="form-control"
+                [(ngModel)]="filters.sortOrderMax"
+                [ngModelOptions]="{ standalone: true }"
+              />
+            </div>
+          </div>
+          <div class="col-12 col-sm-auto">
+            <div class="mb-3">
+              <label class="form-label" for="disabledFilter">
+                {{ 'Configuration::Disabled' | abpLocalization }}
+              </label>
+
+              <select
+                name="disabled"
+                id="disabledFilter"
+                class="form-select form-control"
+                [(ngModel)]="filters.disabled"
+                [ngModelOptions]="{ standalone: true }"
+                (change)="list.get()"
+              >
+                <option [ngValue]=""></option>
+                <option [ngValue]="true">{{ 'AbpUi::Yes' | abpLocalization }}</option>
+                <option [ngValue]="false">{{ 'AbpUi::No' | abpLocalization }}</option>
+              </select>
+            </div>
+          </div>
+          <div class="col-12 col-sm-auto">
+            <div class="mb-3">
+              <label class="form-label" for="csAttributeIdFilter">
+                {{ 'Configuration::CSAttribute' | abpLocalization }}
+              </label>
+              <abp-lookup-select
+                cid="csAttributeIdFilter"
+                [getFn]="service.getCSAttributeLookup"
+                [(ngModel)]="filters.csAttributeId"
+                [ngModelOptions]="{ standalone: true }"
+              ></abp-lookup-select>
+            </div>
+          </div>
+
+          <div class="col-12 col-sm-auto align-self-end mb-3">
+            <div class="row">
+              <div class="col-6 col-sm-auto d-grid">
+                <button type="button" class="btn btn-outline-primary" (click)="clearFilters()">
+                  <span>{{ 'AbpUi::Clear' | abpLocalization }}</span>
+                </button>
+              </div>
+              <div class="col-6 col-sm-auto d-grid">
+                <button type="button" class="btn btn-primary" (click)="list.get()">
+                  <span>{{ 'AbpUi::Refresh' | abpLocalization }}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+    </abp-advanced-entity-filters-form>
+  </abp-advanced-entity-filters>
+
+  <div class="card">
+    <div class="card-body">
+      <ngx-datatable [rows]="data.items" [count]="data.totalCount" [list]="list" default>
+        <ngx-datatable-column
+          [name]="'AbpUi::Actions' | abpLocalization"
+          [maxWidth]="150"
+          [width]="150"
+          [sortable]="false"
+        >
+          <ng-template let-row="row" let-i="rowIndex" ngx-datatable-cell-template>
+            <div ngbDropdown container="body" class="d-inline-block">
+              <button
+                class="btn btn-primary btn-sm dropdown-toggle"
+                data-toggle="dropdown"
+                aria-haspopup="true"
+                ngbDropdownToggle
+              >
+                <i class="fa fa-cog me-1" aria-hidden="true"></i>
+                {{ 'AbpUi::Actions' | abpLocalization }}
+              </button>
+
+              <div ngbDropdownMenu>
+                <button
+                  ngbDropdownItem
+                  *abpPermission="'Configuration.CSAttributeDetails.Edit'"
+                  (click)="update(row)"
+                >
+                  {{ 'AbpUi::Edit' | abpLocalization }}
+                </button>
+
+                <button
+                  ngbDropdownItem
+                  *abpPermission="'Configuration.CSAttributeDetails.Delete'"
+                  (click)="delete(row)"
+                >
+                  {{ 'AbpUi::Delete' | abpLocalization }}
+                </button>
+              </div>
+            </div>
+          </ng-template>
+        </ngx-datatable-column>
+        <ngx-datatable-column
+          name="{{ 'Configuration::ValueID' | abpLocalization }}"
+          prop="csAttributeDetail.valueID"
+        >
+          <ng-template let-row="row" ngx-datatable-cell-template>
+            {{ row.csAttributeDetail.valueID }}
+          </ng-template>
+        </ngx-datatable-column>
+        <ngx-datatable-column
+          name="{{ 'Configuration::Description' | abpLocalization }}"
+          prop="csAttributeDetail.description"
+        >
+          <ng-template let-row="row" ngx-datatable-cell-template>
+            {{ row.csAttributeDetail.description }}
+          </ng-template>
+        </ngx-datatable-column>
+        <ngx-datatable-column
+          name="{{ 'Configuration::SortOrder' | abpLocalization }}"
+          prop="csAttributeDetail.sortOrder"
+        >
+          <ng-template let-row="row" ngx-datatable-cell-template>
+            {{ row.csAttributeDetail.sortOrder }}
+          </ng-template>
+        </ngx-datatable-column>
+        <ngx-datatable-column
+          name="{{ 'Configuration::Disabled' | abpLocalization }}"
+          prop="csAttributeDetail.disabled"
+        >
+          <ng-template let-row="row" ngx-datatable-cell-template>
+            <ng-template
+              [ngIf]="row.csAttributeDetail.disabled"
+              [ngIfThen]="yes"
+              [ngIfElse]="no"
+            ></ng-template>
+
+            <ng-template #yes>
+              <div class="text-success">
+                <span [title]="'AbpUi::Yes' | abpLocalization">
+                  <i class="fa fa-check" aria-hidden="true"></i>
+                </span>
+              </div>
+            </ng-template>
+
+            <ng-template #no>
+              <div class="text-danger">
+                <span [title]="'AbpUi::No' | abpLocalization">
+                  <i class="fa fa-times" aria-hidden="true"></i>
+                </span>
+              </div>
+            </ng-template>
+          </ng-template>
+        </ngx-datatable-column>
+
+        <ngx-datatable-column
+          name="{{ 'Configuration::CSAttribute' | abpLocalization }}"
+          prop="csAttribute.attributeID"
+        >
+          <ng-template let-row="row" ngx-datatable-cell-template>
+            {{ row.csAttribute?.attributeID }}
+          </ng-template>
+        </ngx-datatable-column>
+      </ngx-datatable>
+    </div>
+  </div>
+</abp-page>
+
+<abp-modal [busy]="isModalBusy" [(visible)]="isModalOpen">
+  <ng-template #abpHeader>
+    <h3>
+      {{ (selected ? 'AbpUi::Edit' : 'Configuration::NewCSAttributeDetail') | abpLocalization }}
+    </h3>
+  </ng-template>
+
+  <ng-template #abpBody>
+    <form [formGroup]="form" id="csattribute-detail" (ngSubmit)="submitForm()" validateOnSubmit>
+      <div class="mt-2 fade-in-top">
+        <div class="mb-3">
+          <label class="form-label" for="csattribute-detail-value-id">
+            {{ 'Configuration::ValueID' | abpLocalization }} *
+          </label>
+
+          <input
+            id="csattribute-detail-value-id"
+            formControlName="valueID"
+            class="form-control"
+            maxlength="10"
+            autofocus
+          />
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="csattribute-detail-description">
+            {{ 'Configuration::Description' | abpLocalization }} *
+          </label>
+
+          <input
+            id="csattribute-detail-description"
+            formControlName="description"
+            class="form-control"
+            maxlength="60"
+          />
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="csattribute-detail-sort-order">
+            {{ 'Configuration::SortOrder' | abpLocalization }}
+          </label>
+
+          <input
+            type="number"
+            id="csattribute-detail-sort-order"
+            formControlName="sortOrder"
+            class="form-control"
+          />
+        </div>
+        <div class="form-check mb-3">
+          <input
+            type="checkbox"
+            id="csattribute-detail-disabled"
+            formControlName="disabled"
+            class="form-check-input"
+          />
+
+          <label for="csattribute-detail-disabled" class="form-check-label">
+            {{ 'Configuration::Disabled' | abpLocalization }}
+          </label>
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="csattribute-detail-csattribute-id">
+            {{ 'Configuration::CSAttribute' | abpLocalization }}
+          </label>
+
+          <abp-lookup-select
+            cid="csattribute-detail-csattribute-id"
+            formControlName="csAttributeId"
+            [getFn]="service.getCSAttributeLookup"
+          ></abp-lookup-select>
+        </div>
+      </div>
+    </form>
+  </ng-template>
+
+  <ng-template #abpFooter>
+    <button type="button" class="btn btn-secondary" abpClose>
+      {{ 'AbpUi::Cancel' | abpLocalization }}
+    </button>
+
+    <abp-button iconClass="fa fa-check" buttonType="submit" formName="csattribute-detail">
+      {{ 'AbpUi::Save' | abpLocalization }}
+    </abp-button>
+  </ng-template>
+</abp-modal>
