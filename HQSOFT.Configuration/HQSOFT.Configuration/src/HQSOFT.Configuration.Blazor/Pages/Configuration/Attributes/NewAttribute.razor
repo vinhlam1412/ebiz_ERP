@@ -74,60 +74,68 @@
                 </Column>
             </Row>
 
-            <Row>
-                <Column ColumnSize="ColumnSize.Is6">
-                    <Field>
-                        <FieldLabel>@L["EntryMask"]</FieldLabel>
-                        <TextEdit @bind-Text="@EditingAttribute.EntryMask" Disabled="@isDisabled" MaxLength="CSAttributeConsts.DescriptionMaxLength">
-                            <Feedback>
-                                <ValidationError />
-                            </Feedback>
-                        </TextEdit>
-                    </Field>
-                </Column>
-                <Column ColumnSize="ColumnSize.Is6">
-                    <Field Visibility="@isVisible">
-                        <FieldLabel>@L["SchemaObject"]</FieldLabel>
-                        <TextEdit @bind-Text="@EditingAttribute.ObjectName" MaxLength="CSAttributeConsts.DescriptionMaxLength">
-                            <Feedback>
-                                <ValidationError />
-                            </Feedback>
-                        </TextEdit>
-                    </Field>
-                </Column>
-            </Row>
+            @if (isVisibleText == Visibility.Visible)
+            {
+                <Row>
+                    <Column ColumnSize="ColumnSize.Is6">
+                        <Field>
+                            <FieldLabel>@L["EntryMask"]</FieldLabel>
+                            <TextEdit @bind-Text="@EditingAttribute.EntryMask" Disabled="@isDisabled" MaxLength="CSAttributeConsts.DescriptionMaxLength">
+                                <Feedback>
+                                    <ValidationError />
+                                </Feedback>
+                            </TextEdit>
+                        </Field>
+                    </Column>
+                    <Column ColumnSize="ColumnSize.Is6">
+                        <Field>
+                            <FieldLabel>@L["RegExp"]</FieldLabel>
+                            <TextEdit @bind-Text="@EditingAttribute.RegExp" Disabled="@isDisabled" MaxLength="CSAttributeConsts.DescriptionMaxLength">
+                                <Feedback>
+                                    <ValidationError />
+                                </Feedback>
+                            </TextEdit>
+                        </Field>
 
-            <Row>
-                <Column ColumnSize="ColumnSize.Is6">
-                    <Field>
-                        <FieldLabel>@L["RegExp"]</FieldLabel>
-                        <TextEdit @bind-Text="@EditingAttribute.RegExp" Disabled="@isDisabled" MaxLength="CSAttributeConsts.DescriptionMaxLength">
-                            <Feedback>
-                                <ValidationError />
-                            </Feedback>
-                        </TextEdit>
-                    </Field>
+                    </Column>
+                </Row>
+            }
+            else
+            {
+                <Row>
+                    <Column ColumnSize="ColumnSize.Is6">
+                        <Field>
+                            <FieldLabel>@L["SchemaObject"]</FieldLabel>
+                            <TextEdit @bind-Text="@EditingAttribute.ObjectName" MaxLength="CSAttributeConsts.DescriptionMaxLength">
+                                <Feedback>
+                                    <ValidationError />
+                                </Feedback>
+                            </TextEdit>
+                        </Field>
+                    </Column>
+                    <Column ColumnSize="ColumnSize.Is6">
+                        <Field>
+                            <FieldLabel>@L["SchemaField"]</FieldLabel>
+                            <TextEdit @bind-Text="@EditingAttribute.FieldName" MaxLength="CSAttributeConsts.DescriptionMaxLength">
+                                <Feedback>
+                                    <ValidationError />
+                                </Feedback>
+                            </TextEdit>
+                        </Field>
+                    </Column>
+                </Row>
+            }
 
-                </Column>
-                <Column ColumnSize="ColumnSize.Is6">
-                    <Field Visibility="@isVisible">
-                        <FieldLabel>@L["SchemaField"]</FieldLabel>
-                        <TextEdit @bind-Text="@EditingAttribute.FieldName" MaxLength="CSAttributeConsts.DescriptionMaxLength">
-                            <Feedback>
-                                <ValidationError />
-                            </Feedback>
-                        </TextEdit>
-                    </Field>
-                </Column>
-            </Row>
+
+       
         </Validations>
     </CardBody>
     <DxFormLayout>
         <DxFormLayoutItem BeginRow="true" ColSpanMd="12">
-            <DxGrid Data="DataSource"
+            <DxGrid Data="listAttribute"
                     PageSize="12"
                     KeyFieldName="ValueID"
-                    ValidationEnabled="false"              
+                    ValidationEnabled="false"
                     CustomizeEditModel="Grid_CustomizeEditModel"
                     EditModelSaving="Grid_EditModelSaving"
                     DataItemDeleting="Grid_DataItemDeleting"                                     
@@ -138,10 +146,9 @@
                     <DxGridDataColumn FieldName="ValueID" MinWidth="100"  />
                     <DxGridDataColumn FieldName="Description" Width="15%" />
                     <DxGridDataColumn FieldName="SortOrder" Width="15%" />
-                    <DxGridDataColumn FieldName="Disabled" Width="10%" />
-                   
+                    <DxGridDataColumn FieldName="Disabled" Width="10%" />                   
                 </Columns>
             </DxGrid>
-        </DxFormLayoutItem>
+        </DxFormLayoutItem>  
     </DxFormLayout>
 </Card>

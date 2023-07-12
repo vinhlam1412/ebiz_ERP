@@ -1,6 +1,7 @@
 @page "/Configuration/CSAttributes"
 
 @attribute [Authorize(ConfigurationPermissions.CSAttributes.Default)]
+@using HQSOFT.Configuration.CSAttributeDetails;
 @using global::HQSOFT.Configuration.CSAttributes
 @using global::HQSOFT.Configuration.Localization
 @using global::HQSOFT.Configuration.Shared
@@ -21,6 +22,7 @@
 @using Volo.Abp.Http.Client
 @inherits ConfigurationComponentBase
 @inject ICSAttributesAppService CSAttributesAppService
+@inject ICSAttributeDetailsAppService AttributeDetailsAppService
 @inject IUiMessageService UiMessageService
 @inject IRemoteServiceConfigurationProvider RemoteServiceConfigurationProvider
 @inject NavigationManager NavigationManager

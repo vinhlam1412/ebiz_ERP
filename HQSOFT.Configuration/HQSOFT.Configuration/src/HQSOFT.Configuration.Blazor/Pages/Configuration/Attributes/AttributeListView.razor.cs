@@ -91,6 +91,11 @@ namespace HQSOFT.Configuration.Blazor.Pages.Configuration.Attributes
                         foreach (var attr in selectedAttributes)
                         {
                             await CSAttributesAppService.DeleteAsync(attr.Id);
+                           var listAttrDetail = await AttributeDetailsAppService.GetListAllAttriDetail(attr.Id);
+                            foreach (var attr2 in listAttrDetail)
+                            {
+                                await AttributeDetailsAppService.DeleteAsync(attr2.Id);
+                            }
                         }
                         await GetCSAttributesAsync();
                     }

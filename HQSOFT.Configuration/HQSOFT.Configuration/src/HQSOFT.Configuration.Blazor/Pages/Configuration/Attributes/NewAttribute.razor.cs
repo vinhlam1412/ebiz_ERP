@@ -1,5 +1,6 @@
 ﻿using Blazorise;
 using DevExpress.Blazor;
+using DevExpress.Pdf.Native.BouncyCastle.Asn1.X509;
 using HQSOFT.Configuration.CSAttributeDetails;
 using HQSOFT.Configuration.CSAttributes;
 using HQSOFT.Configuration.Permissions;
@@ -25,8 +26,7 @@ namespace HQSOFT.Configuration.Blazor.Pages.Configuration.Attributes
 
         private Guid EditingAttributeId { get; set; }
 
-        private IReadOnlyList<CSAttributeDetailDto> _attributeDetails { get; set; }
-        Blazorise.Visibility isVisible;
+        Blazorise.Visibility isVisibleText;
 
         bool isDisabled;
 
@@ -34,7 +34,7 @@ namespace HQSOFT.Configuration.Blazor.Pages.Configuration.Attributes
 
         ControlType selectedValue;
 
-        IEnumerable<CSAttributeDetailDto> DataSource { get; set; }
+        List<CSAttributeDetailDto> listAttribute { get; set; }
 
         [Parameter]
         public string Id { get; set; }
@@ -42,6 +42,7 @@ namespace HQSOFT.Configuration.Blazor.Pages.Configuration.Attributes
         IGrid Grid { get; set; }
 
         bool IsEditingInfo { get; set; }
+
         public NewAttribute(IUiMessageService messageService)
         {
             EditingAttribute = new CSAttributeUpdateDto();
@@ -86,45 +87,47 @@ namespace HQSOFT.Configuration.Blazor.Pages.Configuration.Attributes
         {
             await SetToolbarItemsAsync();
             await SetBreadcrumbItemsAsync();
-            if (EditingAttribute.ControlType == ControlType.MultiSelectCombo || EditingAttribute.ControlType == ControlType.Combo)
-            {
-                isVisibleEditMode = true;
-            }
-            else
-            {
-                isVisibleEditMode = false;
-            }
-            if (EditingAttribute.ControlType == ControlType.Selector)
-            {
-                isVisible = Visibility.Visible;
-            }
-            else
-            {
-                isVisible = Visibility.Invisible;
-            }
-            if (EditingAttribute.ControlType == ControlType.Text)
-            {
-                isDisabled = false;
+            isDisabled = true;
 
-            }
-            else
-            {
-                isDisabled = true;
-
-            }
             //await SetPermissionsAsync();
 
-            isVisible = Visibility.Invisible;
+            isVisibleText = Visibility.Visible;
 
             EditingAttributeId = Guid.Parse(Id);
             if (EditingAttributeId != Guid.Empty)
             {
+
                 var attributeID = await CSAttributesAppService.GetAsync(EditingAttributeId);
                 EditingAttribute = ObjectMapper.Map<CSAttributeDto, CSAttributeUpdateDto>(attributeID);
-            }
 
-            _attributeDetails = new List<CSAttributeDetailDto>();
-            DataSource = await AttributeDetailsAppService.GetListAllAttriDetail(EditingAttributeId);
+                if (EditingAttribute.ControlType == ControlType.MultiSelectCombo || EditingAttribute.ControlType == ControlType.Combo)
+                {
+                    isVisibleEditMode = true;
+                }
+                else
+                {
+                    isVisibleEditMode = false;
+                }
+                if (EditingAttribute.ControlType == ControlType.Selector)
+                {
+                    isVisibleText = Visibility.Invisible;
+                }
+                else
+                {
+                    isVisibleText = Visibility.Visible;
+                }
+                if (EditingAttribute.ControlType == ControlType.Text)
+                {
+                    isDisabled = false;
+
+                }
+                else
+                {
+                    isDisabled = true;
+
+                }
+            }
+            listAttribute = await AttributeDetailsAppService.GetListAllAttriDetail(EditingAttributeId);
 
         }
         private async Task CreateCSAttributeAsync()
@@ -140,6 +143,12 @@ namespace HQSOFT.Configuration.Blazor.Pages.Configuration.Attributes
                 CSAttributeCreateDto csAttributeCreateDto = ObjectMapper.Map<CSAttributeUpdateDto, CSAttributeCreateDto>(EditingAttribute);
                 var csAttribute = await CSAttributesAppService.CreateAsync(csAttributeCreateDto);
 
+                foreach (var item in listAttribute)
+                {
+                    var mapitem = ObjectMapper.Map<CSAttributeDetailDto, CSAttributeDetailCreateDto>(item);
+                    mapitem.CSAttributeId = csAttribute.Id;
+                    await AttributeDetailsAppService.CreateAsync(mapitem);
+                }
 
                 EditingAttributeId = csAttribute.Id;
                 EditingAttribute = ObjectMapper.Map<CSAttributeDto, CSAttributeUpdateDto>(csAttribute);
@@ -160,6 +169,21 @@ namespace HQSOFT.Configuration.Blazor.Pages.Configuration.Attributes
                     return;
                 }
 
+                foreach (var item in listAttribute)
+                {
+                    if(item.Id == Guid.Empty)
+                    {
+                        var mapitem = ObjectMapper.Map<CSAttributeDetailDto, CSAttributeDetailCreateDto>(item);
+                        mapitem.CSAttributeId = EditingAttributeId;
+                        await AttributeDetailsAppService.CreateAsync(mapitem);
+                    }
+                    else
+                    {
+                        var mapitem = ObjectMapper.Map<CSAttributeDetailDto, CSAttributeDetailUpdateDto>(item);
+                        mapitem.CSAttributeId = EditingAttributeId;
+                        await AttributeDetailsAppService.UpdateAsync(item.Id, mapitem);
+                    }
+                }
                 await CSAttributesAppService.UpdateAsync(EditingAttributeId, EditingAttribute);
                 var csAttribute = await CSAttributesAppService.GetAsync(EditingAttributeId);
                 EditingAttribute = ObjectMapper.Map<CSAttributeDto, CSAttributeUpdateDto>(csAttribute);
@@ -192,6 +216,14 @@ namespace HQSOFT.Configuration.Blazor.Pages.Configuration.Attributes
                 await HandleErrorAsync(ex);
             }
         }
+        public async Task SaveList(List<CSAttributeDetailDto> listAttribute)
+        {
+            var DataSource = await AttributeDetailsAppService.GetListAllAttriDetail(EditingAttributeId);
+            foreach (var item in DataSource)
+            {
+                
+            }
+        }
         private async Task DeleteCSAttributeAsync(Guid id)
         {
             await CSAttributesAppService.DeleteAsync(id);
@@ -211,21 +243,23 @@ namespace HQSOFT.Configuration.Blazor.Pages.Configuration.Attributes
             }
             if (selectedValue == ControlType.Selector)
             {
-                isVisible = Visibility.Visible;
+                isVisibleText = Visibility.Invisible;
             }
             else
             {
-                isVisible = Visibility.Invisible;
+                isVisibleText = Visibility.Visible;
             }
             if (selectedValue == ControlType.Text)
             {
-                isDisabled = false;
-                
+                isDisabled = false;               
+
             }
             else
             {
                 isDisabled = true;
-                
+                EditingAttribute.RegExp = "";
+                EditingAttribute.EntryMask = "";
+
             }
            
             return Task.CompletedTask;
@@ -234,36 +268,36 @@ namespace HQSOFT.Configuration.Blazor.Pages.Configuration.Attributes
         {
             NavigationManager.NavigateTo("/Configuration/CSAttributes");
         }
-        //protected override async Task OnAfterRenderAsync(bool firstRender)
-        //{
-        //    if (firstRender)
-        //        await Grid.StartEditNewRowAsync();
-        //}
-        async Task Grid_EditModelSaving(GridEditModelSavingEventArgs e)
+
+        void Grid_EditModelSaving(GridEditModelSavingEventArgs e)
         {
             var edittableDetail = (CSAttributeDetailDto)e.EditModel;
-           
+
             if (e.IsNew)
             {
-                var createtableDetail = ObjectMapper.Map<CSAttributeDetailDto, CSAttributeDetailCreateDto>(edittableDetail);
-                createtableDetail.CSAttributeId = EditingAttributeId;
-                await SaveCsAttributeAsync(false);
-                await AttributeDetailsAppService.CreateAsync(createtableDetail);
-
+                listAttribute.Add(edittableDetail);
             }
             else
             {
-                var updatetableDetail = ObjectMapper.Map<CSAttributeDetailDto, CSAttributeDetailUpdateDto>(edittableDetail);
-                await AttributeDetailsAppService.UpdateAsync(edittableDetail.Id, updatetableDetail);
+                UpdateListAttriDetailAsync((CSAttributeDetailDto)e.DataItem, edittableDetail);
             }
-            await UpdateDataAsync();
+
 
         }
+
         async Task Grid_DataItemDeleting(GridDataItemDeletingEventArgs e)
         {
-            var removetableDetail = (CSAttributeDetailDto)e.DataItem;
-            await AttributeDetailsAppService.DeleteAsync(removetableDetail.Id);
-            await UpdateDataAsync();
+            var removetableDetail = (CSAttributeDetailDto)e.DataItem;         
+           if(EditingAttributeId == Guid.Empty)
+            {
+                listAttribute.Remove(removetableDetail);
+            }else
+            {
+                listAttribute.Remove(removetableDetail);
+                await AttributeDetailsAppService.DeleteAsync(removetableDetail.Id);
+                await UpdateDataAsync();
+            }
+
         }
         void Grid_CustomizeEditModel(GridCustomizeEditModelEventArgs e)
         {
@@ -275,8 +309,18 @@ namespace HQSOFT.Configuration.Blazor.Pages.Configuration.Attributes
         }
         async Task UpdateDataAsync()
         {
-            DataSource = await AttributeDetailsAppService.GetListAllAttriDetail(EditingAttributeId);
+            listAttribute = await AttributeDetailsAppService.GetListAllAttriDetail(EditingAttributeId);
         }
 
+        public Task UpdateListAttriDetailAsync(CSAttributeDetailDto dataItem, CSAttributeDetailDto newDataItem)
+        {
+            // Change your data here
+            var index = listAttribute.FindIndex(r => r.ValueID == dataItem.ValueID);
+            if (index != -1)
+            {
+                listAttribute[index] = newDataItem;
+            }
+            return Task.CompletedTask;
+        }
     }
 }
